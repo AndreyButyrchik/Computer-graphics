@@ -1,0 +1,13 @@
+.container {
+	display: flex;
+	padding: 0 16px;
+}
+
+.container > div {
+	margin: 0 1px;
+	max-width: 65px;
+}
+
+.pb-0 {
+	padding-bottom: 0
+}
