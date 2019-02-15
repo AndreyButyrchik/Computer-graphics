@@ -1,33 +1,24 @@
 import * as React from 'react';
 import { ColorPicker, TextField } from 'office-ui-fabric-react/lib/index';
 import { IColor } from 'office-ui-fabric-react/lib/Color';
+import  {IRGBColor, ICMYKColor, CMYKtoRGB, RGBtoCMYK} from '../utils/CMYK';
+import {RGBToLAB, ILABColor} from '../utils/LAB';
 import './styles.css';
 
 export interface IColorConverter {
   colorRGB: IRGBColor;
   colorCMYK: ICMYKColor;
-}
-
-export interface ICMYKColor {
-  C: number;
-  M: number;
-  Y: number;
-  K: number;
-}
-
-export interface IRGBColor {
-  R: number;
-  G: number;
-  B: number;
+  colorLAB: ILABColor;
 }
 
 class ColorConverter extends React.Component<{}, IColorConverter> {
+  private flag: boolean = true;
   constructor() {
     super();
 
     this.state = {
       colorRGB: {
-        R: 255,
+        R: 0,
         G: 0,
         B: 0
       },
@@ -36,49 +27,54 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
         M: 0,
         Y: 0,
         K: 0,
+      },
+      colorLAB: {
+        L: 0,
+        A: 0,
+        B: 0,
       }
     };
   }
 
   private colorToString(color: IRGBColor): string {
-    return Object.values(color).map(c => this.componentToHex(c)).join('');
+    return Object.values(color).map(c => this.componentToHex(parseInt(c))).join('');
   }
 
-  private RGBtoCMYK (color: IRGBColor): ICMYKColor {
-    let targetColor: ICMYKColor = {
-      C: 0,
-      M: 0,
-      Y: 0,
-      K: 0,
-    };
-
-    const normalR = color.R / 255;
-    const normalG = color.G / 255;
-    const normalB = color.B / 255;
-
-    targetColor.K = Math.min(1 - normalR, 1 - normalG, 1 - normalB);
-    targetColor.C = (1 - normalR - targetColor.K) / (1 - targetColor.K);
-    targetColor.M = (1 - normalG - targetColor.K) / (1 - targetColor.K);
-    targetColor.Y = (1 - normalB - targetColor.K) / (1 - targetColor.K);
-
-    return targetColor;
+  private onChangeCMYK = (ev: any, value: string) => {
+    let color = this.state.colorCMYK;
+    const component = ev.target.id;
+    this.flag = false;
+    if(!value) {
+      color[component] = 0;
+      setTimeout(() => {this.flag = true;}, 100);
+      this.setState({
+        colorCMYK: color,
+        colorRGB: CMYKtoRGB(color)
+      });
+    } else {
+      if(value.split('.').length > 2) {
+        color[component] = value.slice(0, -1);
+        setTimeout(() => {this.flag = true;}, 100);
+        this.setState({
+          colorCMYK: color,
+          colorRGB: CMYKtoRGB(color)
+        });
+      } else {
+        if(value.indexOf('.') === -1) {
+          color[component] = parseFloat(value);
+        } else {
+          color[component] = value;
+        }
+        setTimeout(() => {this.flag = true;}, 100);
+        this.setState({
+          colorCMYK: color,
+          colorRGB: CMYKtoRGB(color)
+        });
+      }
+    }
   }
 
-  private CMYKtoRGB (color: ICMYKColor): IRGBColor {
-    let targetColor: IRGBColor = {
-      R: 0,
-      G: 0,
-      B: 0,
-    };
-
-    targetColor.R = 255 * (1 - color.C) * (1 - color.K);
-    targetColor.G = 255 * (1 - color.M) * (1 - color.K);
-    targetColor.B = 255 * (1 - color.Y) * (1 - color.K);
-
-    return targetColor;
-  }
-
-  private componentToHex = c => {
+  private componentToHex = (c): number => {
     var hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
   }
@@ -89,15 +85,32 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
       G: colorObject.g,
       B: colorObject.b,
     };
-    console.log(this.RGBtoCMYK(RGB));
-    // this.setState({
-    //   colorCMYK: this.RGBtoCMYK(RGB)
-    // });
+    if(this.flag) {
+      this.setState({
+        colorRGB: RGB,
+        colorCMYK: RGBtoCMYK(RGB),
+        colorLAB: RGBToLAB(RGB)
+      });
+    } else {
+      this.setState({
+        colorRGB: RGB,
+      });
+    }
+  }
+
+  private onChangeLAB = (ev: any, value: string) => {
+    let color = this.state.colorLAB;
+    const component = ev.target.id;
+    color[component] = parseFloat(value);
+      this.setState({
+        colorLAB: color,
+        // colorRGB: CMYKtoRGB(color)
+      });
   }
 
   public render() {
-    const { colorRGB, colorCMYK } = this.state;
-    
+    const { colorRGB, colorCMYK, colorLAB } = this.state;
+
     return (
       <div>
           <ColorPicker
@@ -108,22 +121,42 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
           />
           <div className="container">
             <TextField label="Cyan"
-              value={colorCMYK.C.toString()}
+              id="C"
+              value={colorCMYK.C.toString().slice(0, 4)}
+              onChange={this.onChangeCMYK}
             />
             <TextField label="Magenta"
-              value={colorCMYK.M.toString()}
+              id="M"
+              value={colorCMYK.M.toString().slice(0, 4)}
+              onChange={this.onChangeCMYK}
             />
             <TextField label="Yellow"
-              value={colorCMYK.Y.toString()}
+              id="Y"
+              value={colorCMYK.Y.toString().slice(0, 4)}
+              onChange={this.onChangeCMYK}
             />
             <TextField label="Key"
-              value={colorCMYK.K.toString()}
+              id="K"
+              value={colorCMYK.K.toString().slice(0, 4)}
+              onChange={this.onChangeCMYK}
             />
           </div>
           <div className="container">
-            <TextField label="L" />
-            <TextField label="A" />
-            <TextField label="B" />
+            <TextField label="L"
+              id="L"
+              value={colorLAB.L.toString().slice(0, 4)}
+              onChange={this.onChangeLAB}
+            />
+            <TextField label="A"
+              id="A"
+              value={colorLAB.A.toString().slice(0, 4)}
+              onChange={this.onChangeLAB}
+            />
+            <TextField label="B"
+              id="B"
+              value={colorLAB.B.toString().slice(0, 4)}
+              onChange={this.onChangeLAB}
+            />
           </div>
       </div>
     );
