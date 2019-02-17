@@ -110,11 +110,44 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
   private onChangeLAB = (ev: any, value: string) => {
     let color = this.state.colorLAB;
     const component = ev.target.id;
-    color[component] = parseFloat(value);
+    // this.flag = false;
+    if(!value) {
+      color[component] = 0;
+      // setTimeout(() => {this.flag = true;}, 100);
+      const RGB = LABtoRGB(color);
+      const CMYK = RGBtoCMYK(RGB);
       this.setState({
+        colorCMYK: CMYK,
+        colorRGB: RGB,
         colorLAB: color,
-        // colorRGB: CMYKtoRGB(color)
       });
+    } else {
+      if(value.split('.').length > 2) {
+        color[component] = value.slice(0, -1);
+        // setTimeout(() => {this.flag = true;}, 100);
+        const RGB = LABtoRGB(color);
+        const CMYK = RGBtoCMYK(RGB);
+        this.setState({
+          colorCMYK: CMYK,
+          colorRGB: RGB,
+          colorLAB: color,
+        });
+      } else {
+        if(value.indexOf('.') === -1) {
+          color[component] = parseFloat(value);
+        } else {
+          color[component] = value;
+        }
+        // setTimeout(() => {this.flag = true;}, 100);
+        const RGB = LABtoRGB(color);
+        const CMYK = RGBtoCMYK(RGB);
+        this.setState({
+          colorCMYK: CMYK,
+          colorRGB: RGB,
+          colorLAB: color,
+        });
+      }
+    }
   }
 
   public render() {
