@@ -47,17 +47,23 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
     if(!value) {
       color[component] = 0;
       setTimeout(() => {this.flag = true;}, 100);
+      const RGB = CMYKtoRGB(color);
+      const LAB = RGBToLAB(RGB);
       this.setState({
         colorCMYK: color,
-        colorRGB: CMYKtoRGB(color)
+        colorRGB: RGB,
+        colorLAB: LAB,
       });
     } else {
       if(value.split('.').length > 2) {
         color[component] = value.slice(0, -1);
         setTimeout(() => {this.flag = true;}, 100);
+        const RGB = CMYKtoRGB(color);
+        const LAB = RGBToLAB(RGB);
         this.setState({
           colorCMYK: color,
-          colorRGB: CMYKtoRGB(color)
+          colorRGB: RGB,
+          colorLAB: LAB,
         });
       } else {
         if(value.indexOf('.') === -1) {
@@ -66,9 +72,12 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
           color[component] = value;
         }
         setTimeout(() => {this.flag = true;}, 100);
+        const RGB = CMYKtoRGB(color);
+        const LAB = RGBToLAB(RGB);
         this.setState({
           colorCMYK: color,
-          colorRGB: CMYKtoRGB(color)
+          colorRGB: RGB,
+          colorLAB: LAB,
         });
       }
     }
@@ -144,17 +153,17 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
           <div className="container">
             <TextField label="L"
               id="L"
-              value={colorLAB.L.toString().slice(0, 4)}
+              value={colorLAB.L.toString().slice(0, colorLAB.L.toString().indexOf('.') !== -1 ? colorLAB.L.toString().indexOf('.') + 3 : 2)}
               onChange={this.onChangeLAB}
             />
             <TextField label="A"
               id="A"
-              value={colorLAB.A.toString().slice(0, 4)}
+              value={colorLAB.A.toString().slice(0, colorLAB.L.toString().indexOf('.') !== -1 ? colorLAB.A.toString().indexOf('.') + 3 : 2)}
               onChange={this.onChangeLAB}
             />
             <TextField label="B"
               id="B"
-              value={colorLAB.B.toString().slice(0, 4)}
+              value={colorLAB.B.toString().slice(0, colorLAB.L.toString().indexOf('.') !== -1 ? colorLAB.B.toString().indexOf('.') + 3 : 2)}
               onChange={this.onChangeLAB}
             />
           </div>
