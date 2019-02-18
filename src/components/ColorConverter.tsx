@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ColorPicker, TextField } from 'office-ui-fabric-react/lib/index';
 import { IColor } from 'office-ui-fabric-react/lib/Color';
 import  {IRGBColor, ICMYKColor, CMYKtoRGB, RGBtoCMYK} from '../utils/CMYK';
-import {RGBToLAB, ILABColor} from '../utils/LAB';
+import {RGBToLAB, ILABColor, LABtoRGB} from '../utils/LAB';
 import './styles.css';
 
 export interface IColorConverter {
@@ -12,7 +12,8 @@ export interface IColorConverter {
 }
 
 class ColorConverter extends React.Component<{}, IColorConverter> {
-  private flag: boolean = true;
+  private CMYKflag: boolean = true;
+  private LABflag: boolean = true;
   constructor() {
     super();
 
@@ -43,10 +44,10 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
   private onChangeCMYK = (ev: any, value: string) => {
     let color = this.state.colorCMYK;
     const component = ev.target.id;
-    this.flag = false;
+    this.CMYKflag = false;
     if(!value) {
       color[component] = 0;
-      setTimeout(() => {this.flag = true;}, 100);
+      setTimeout(() => {this.CMYKflag = true;}, 100);
       const RGB = CMYKtoRGB(color);
       const LAB = RGBToLAB(RGB);
       this.setState({
@@ -57,7 +58,7 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
     } else {
       if(value.split('.').length > 2) {
         color[component] = value.slice(0, -1);
-        setTimeout(() => {this.flag = true;}, 100);
+        setTimeout(() => {this.CMYKflag = true;}, 100);
         const RGB = CMYKtoRGB(color);
         const LAB = RGBToLAB(RGB);
         this.setState({
@@ -71,7 +72,7 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
         } else {
           color[component] = value;
         }
-        setTimeout(() => {this.flag = true;}, 100);
+        setTimeout(() => {this.CMYKflag = true;}, 100);
         const RGB = CMYKtoRGB(color);
         const LAB = RGBToLAB(RGB);
         this.setState({
@@ -94,7 +95,7 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
       G: colorObject.g,
       B: colorObject.b,
     };
-    if(this.flag) {
+    if(this.CMYKflag) {
       this.setState({
         colorRGB: RGB,
         colorCMYK: RGBtoCMYK(RGB),
@@ -110,10 +111,10 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
   private onChangeLAB = (ev: any, value: string) => {
     let color = this.state.colorLAB;
     const component = ev.target.id;
-    // this.flag = false;
+    this.LABflag = false;
     if(!value) {
       color[component] = 0;
-      // setTimeout(() => {this.flag = true;}, 100);
+      setTimeout(() => {this.LABflag = true;}, 100);
       const RGB = LABtoRGB(color);
       const CMYK = RGBtoCMYK(RGB);
       this.setState({
@@ -124,7 +125,7 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
     } else {
       if(value.split('.').length > 2) {
         color[component] = value.slice(0, -1);
-        // setTimeout(() => {this.flag = true;}, 100);
+        setTimeout(() => {this.LABflag = true;}, 100);
         const RGB = LABtoRGB(color);
         const CMYK = RGBtoCMYK(RGB);
         this.setState({
@@ -138,7 +139,7 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
         } else {
           color[component] = value;
         }
-        // setTimeout(() => {this.flag = true;}, 100);
+        setTimeout(() => {this.LABflag = true;}, 100);
         const RGB = LABtoRGB(color);
         const CMYK = RGBtoCMYK(RGB);
         this.setState({
@@ -186,7 +187,7 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
           <div className="container">
             <TextField label="L"
               id="L"
-              value={colorLAB.L.toString().slice(0, colorLAB.L.toString().indexOf('.') !== -1 ? colorLAB.L.toString().indexOf('.') + 3 : 2)}
+              value={colorLAB.L.toString().slice(0, colorLAB.L.toString().indexOf('.') !== -1 ? colorLAB.L.toString().indexOf('.') + 3 : 3)}
               onChange={this.onChangeLAB}
             />
             <TextField label="A"
@@ -200,6 +201,14 @@ class ColorConverter extends React.Component<{}, IColorConverter> {
               onChange={this.onChangeLAB}
             />
           </div>
+          <div style={{padding: '0 16px'}}>
+            <div style={{
+                width: '100%',
+                height: '100px',
+                marginTop: '40px',
+                background: `#${this.colorToString(colorRGB)}`
+              }}></div>
+            </div>
       </div>
     );
   }
