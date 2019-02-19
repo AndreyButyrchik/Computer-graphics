@@ -25,7 +25,6 @@ const f = (x: number): number => {
 	} else if (x >= 0 && x <= 0.008856) {
 		return (7.787 * x) + (16 / 116);
 	}
-	debugger;
 };
 
 export const RGBToLAB = (color: IRGBColor): ILABColor => {
